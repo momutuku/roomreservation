@@ -3,61 +3,49 @@ package com.group1.roomreservation.endpoints;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.ws.server.endpoint.annotation.Endpoint;
-import org.springframework.ws.server.endpoint.annotation.PayloadRoot;
-import org.springframework.ws.server.endpoint.annotation.RequestPayload;
-import org.springframework.ws.server.endpoint.annotation.ResponsePayload;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import com.group1.roomreservation.dtos.CreateRoomRequest;
-import com.group1.roomreservation.dtos.CreateRoomResponse;
-import com.group1.roomreservation.dtos.GetAvailableRoomsRequest;
-import com.group1.roomreservation.dtos.GetAvailableRoomsResponse;
-import com.group1.roomreservation.dtos.GetRoomDetailsRequest;
-import com.group1.roomreservation.dtos.GetRoomDetailsResponse;
 import com.group1.roomreservation.models.Room;
+import com.group1.roomreservation.repositories.RoomRepository;
 import com.group1.roomreservation.services.RoomService;
 
-@Endpoint
+import jakarta.persistence.EntityNotFoundException;
+
+@RestController
+@RequestMapping("/rooms")
 public class RoomEndpoint {
-    private static final String NAMESPACE_URI = "http://example.com/hotelbooking";
     private final RoomService roomService;
+    private final RoomRepository repo;
 
-    public RoomEndpoint(RoomService roomService) {
+    public RoomEndpoint(RoomService roomService, RoomRepository repo) {
         this.roomService = roomService;
+        this.repo = repo;
     }
 
-    @PayloadRoot(namespace = NAMESPACE_URI, localPart = "CreateRoomRequest")
-    @ResponsePayload
-    public CreateRoomResponse createRoom(@RequestPayload CreateRoomRequest request) {
-        Room room = roomService.createRoom(request.getName(), request.getPrice());
-
-        CreateRoomResponse response = new CreateRoomResponse();
-        response.setName(room.getName());
-        response.setPrice(room.getPrice());
-        response.setAvailability(room.isAvailable());
-
-        return response;
+    @PostMapping("/")
+    public Room createRoom(@RequestBody Room room) {
+        room.setAvailable(true);
+        return repo.save(room);
     }
 
-    @PayloadRoot(namespace = NAMESPACE_URI, localPart = "GetRoomDetailsRequest")
-    @ResponsePayload
-    public GetRoomDetailsResponse getRoomDetails(@RequestPayload GetRoomDetailsRequest request) {
-        Optional<Room> roomOpt = roomService.getRoomDetails(request.getRoomId());
-        GetRoomDetailsResponse response = new GetRoomDetailsResponse();
-        roomOpt.ifPresent(room -> {
-            response.setName(room.getName());
-            response.setPrice(room.getPrice());
-            response.setAvailable(room.isAvailable());
-        });
-        return response;
+    @GetMapping("/{id}")
+    public Room getRoomDetails(@PathVariable Long id) {
+        Optional<Room> roomOpt = roomService.getRoomDetails(id);
+        if (roomOpt.isPresent()) {
+            return roomOpt.get();
+        } else {
+            throw new EntityNotFoundException("Room not found");
+        }
     }
 
-    @PayloadRoot(namespace = NAMESPACE_URI, localPart = "GetAvailableRoomsRequest")
-    @ResponsePayload
-    public GetAvailableRoomsResponse getAvailableRooms(@RequestPayload GetAvailableRoomsRequest request) {
-        List<Room> availableRooms = roomService.getAvailableRooms();
-        GetAvailableRoomsResponse response = new GetAvailableRoomsResponse();
-        response.setRooms(availableRooms);
-        return response;
+    @GetMapping("/available")
+    public List<Room> getAvailableRooms() {
+        return roomService.getAvailableRooms();
+
     }
 }

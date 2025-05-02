@@ -1,32 +1,28 @@
 package com.group1.roomreservation.endpoints;
 
-import org.springframework.ws.server.endpoint.annotation.Endpoint;
-import org.springframework.ws.server.endpoint.annotation.PayloadRoot;
-import org.springframework.ws.server.endpoint.annotation.RequestPayload;
-import org.springframework.ws.server.endpoint.annotation.ResponsePayload;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import com.group1.roomreservation.dtos.CreateClientRequest;
-import com.group1.roomreservation.dtos.CreateClientResponse;
 import com.group1.roomreservation.models.Client;
+import com.group1.roomreservation.repositories.ClientRepository;
 import com.group1.roomreservation.services.ClientService;
 
-@Endpoint
+@RestController
+@RequestMapping("/clients")
 public class ClientEndpoint {
-    private static final String NAMESPACE_URI = "http://example.com/hotelbooking";
     private final ClientService clientService;
+    @Autowired
+    private ClientRepository repo;
 
     public ClientEndpoint(ClientService clientService) {
         this.clientService = clientService;
     }
 
-    @PayloadRoot(namespace = NAMESPACE_URI, localPart = "CreateClientRequest")
-    @ResponsePayload
-    public CreateClientResponse createClient(@RequestPayload CreateClientRequest request) {
-        Client client = clientService.createClient(request.getName());
-
-        CreateClientResponse response = new CreateClientResponse();
-        response.setId(client.getId());
-        response.setName(client.getName());
-        return response;
+    @PostMapping
+    public Client createClient(@RequestBody Client client) {
+        return repo.save(client);
     }
 }

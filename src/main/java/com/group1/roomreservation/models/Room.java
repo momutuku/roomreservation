@@ -19,14 +19,7 @@ public class Room {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String name;
+    private String hotelName;
     private double price;
-    private boolean available = true;
-
-    @OneToMany(mappedBy = "room", fetch = FetchType.EAGER)
-    @JsonIgnore
-    @XmlTransient
-    private List<ReservedRoom> reservations;
-
-    // Getters and Setters
+    private boolean isAvailable = true;
 }

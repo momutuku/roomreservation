@@ -18,7 +18,7 @@ public class RoomService {
 
     public Room createRoom(String name, double price) {
         Room room = new Room();
-        room.setName(name);
+        room.setHotelName(name);
         room.setPrice(price);
         room.setAvailable(true);
         return repository.save(room);
@@ -29,6 +29,6 @@ public class RoomService {
     }
 
     public List<Room> getAvailableRooms() {
-        return repository.findByAvailableTrue();
+        return repository.findByIsAvailableTrue();
     }
 }

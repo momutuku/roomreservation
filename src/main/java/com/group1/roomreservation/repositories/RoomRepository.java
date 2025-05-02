@@ -7,5 +7,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import com.group1.roomreservation.models.Room;
 
 public interface RoomRepository extends JpaRepository<Room, Long> {
-    List<Room> findByAvailableTrue();
+    List<Room> findByIsAvailableTrue();
 }

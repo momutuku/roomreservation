@@ -16,9 +16,6 @@ public class Client {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
-
-    @OneToMany(mappedBy = "client")
-    private List<ReservedRoom> reservedRooms;
-
-    // Getters and Setters
+    private String email;
+    private String phone;
 }
