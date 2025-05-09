@@ -1,6 +1,7 @@
 package com.group1.roomreservation.endpoints;
 
 import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,33 +30,45 @@ public class ReservationController {
         try {
             Reservation res = service.makeReservation(req.getClientId(), req.getNumberOfRooms(),
                     req.getCheckInDate(), req.getCheckOutDate());
-            return ResponseEntity.ok(Map.of(
-                    "client_name", res.getClient().getName(),
-                    "hotel_name", res.getRooms().get(0).getHotelName(),
-                    "amount", res.getTotalAmount(),
-                    "check_in", res.getCheckInDate(),
-                    "check_out", res.getCheckOutDate(),
-                    "days", ChronoUnit.DAYS.between(res.getCheckInDate(), res.getCheckOutDate())));
+            Map<String, Object> response = new HashMap<>();
+            response.put("client_name", res.getClient().getName());
+            response.put("hotel_name", res.getRooms().get(0).getHotelName());
+            response.put("amount", res.getTotalAmount());
+            response.put("check_in", res.getCheckInDate());
+            response.put("check_out", res.getCheckOutDate());
+            response.put("days", ChronoUnit.DAYS.between(res.getCheckInDate(), res.getCheckOutDate()));
+            return ResponseEntity.ok(response);
+
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", e.getMessage()));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error",
+                    e.getMessage()));
         }
     }
 
     @GetMapping("/client/{clientId}")
     public ResponseEntity<?> getByClient(@PathVariable Long clientId) {
-        return service.getByClientId(clientId)
-                .map(res -> Map.of(
-                        "client_name", res.getClient().getName(),
-                        "hotel_name", res.getRooms().get(0).getHotelName(),
-                        "rooms_given", res.getRooms().size(),
-                        "total_amount", res.getTotalAmount(),
-                        "reservation_date", res.getReservationTime(),
-                        "check_in", res.getCheckInDate(),
-                        "check_out", res.getCheckOutDate(),
-                        "confirmation_number", res.getReservationReference(),
-                        "contact_info", "0712345678 | reservations@bluelagoon.ke"))
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(Map.of("error", "No reservation found")));
+        try {
+            return service.getByClientId(clientId)
+                    .map(res -> {
+                        Map<String, Object> response = new HashMap<>();
+                        response.put("client_name", res.getClient().getName());
+                        response.put("hotel_name", res.getRooms().get(0).getHotelName());
+                        response.put("rooms_given", res.getRooms().size());
+                        response.put("total_amount", res.getTotalAmount());
+                        response.put("reservation_date", res.getReservationTime());
+                        response.put("check_in", res.getCheckInDate());
+                        response.put("check_out", res.getCheckOutDate());
+                        response.put("confirmation_number", res.getReservationReference());
+                        response.put("contact_info", "0712345678 | reservations@bluelagoon.ke");
+                        return ResponseEntity.ok(response);
+                    })
+                    .orElseThrow();
+        } catch (Exception e) {
+
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", "An unexpected error occurred");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
     }
+
 }

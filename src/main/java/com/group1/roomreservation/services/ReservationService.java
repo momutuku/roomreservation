@@ -51,7 +51,8 @@ public class ReservationService {
         res.setReservationTime(now);
         res.setConfirmationTime(now);
         res.setTotalAmount(total);
-        res.setRooms(availableRooms);
+        // res.setRooms(availableRooms);
+        res.setRooms(availableRooms.subList(0, numberOfRooms));
 
         for (Room room : availableRooms) {
             room.setAvailable(false);
